@@ -1,12 +1,12 @@
-import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
-import { ImageGallery } from './ImageGallery.styled';
+import { ImageGalleryItem } from '../ImageGalleryItem/ImageGalleryItem';
+import { ImagesList } from './ImageGallery.styled';
 
 export const ImageGallery = ({ items, openModal }) => {
   return (
-    <ImageGallery>
+    <ImagesList>
       {items.map(item => (
         <ImageGalleryItem item={item} key={item.id} onClick={openModal} />
       ))}
-    </ImageGallery>
+    </ImagesList>
   );
 };
