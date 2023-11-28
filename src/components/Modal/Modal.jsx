@@ -26,7 +26,7 @@ export class Modal extends Component {
     return (
       <Overlay onClick={this.handleBackdropClick}>
         <ModalWindow>
-          <img src={modalData.img} alt={modalData.tags} />
+          <img src={modalData.largeImageURL} alt={modalData.tags} />
         </ModalWindow>
       </Overlay>
     );

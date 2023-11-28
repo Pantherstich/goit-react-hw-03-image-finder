@@ -1,9 +1,22 @@
+import { Component } from 'react';
 import { ImgItem, ImgGalleryItem } from './ImageGalleryItem.styled';
 
-export const ImageGalleryItem = ({ item, onClick }) => {
-  return (
-    <ImgGalleryItem onClick={onClick}>
-      <ImgItem src={item.webformatURL} alt={item.tags} id={item.id} />
-    </ImgGalleryItem>
-  );
-};
+export class ImageGalleryItem extends Component {
+  handleClick = () => {
+    const { item, onImageClick } = this.props;
+    onImageClick(item.largeImageURL, item.tags);
+  };
+
+  render() {
+    const { item } = this.props;
+    return (
+      <ImgGalleryItem>
+        <ImgItem
+          src={item.webformatURL}
+          alt={item.tags}
+          onClick={this.handleClick}
+        />
+      </ImgGalleryItem>
+    );
+  }
+}

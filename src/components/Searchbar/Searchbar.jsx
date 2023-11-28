@@ -1,3 +1,5 @@
+import React, { Component } from 'react';
+
 import {
   SearchForm,
   SearchBar,
@@ -5,28 +7,46 @@ import {
   SearchFormInput,
 } from './Searchbar.styled';
 
-const Searchbar = ({ onSubmit }) => {
-  const handleSumbit = e => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const inputValue = form.elements.search.value.trim().toLowerCase();
-    return onSubmit(inputValue);
+export class Searchbar extends Component {
+  state = {
+    nameSearch: '',
   };
 
-  return (
-    <SearchBar>
-      <SearchForm onSubmit={handleSumbit}>
-        <SearchFormButton type="submit">Search</SearchFormButton>
+  handleChange = e => {
+    this.setState({ nameSearch: e.currentTarget.value.toLowerCase() });
+  };
 
-        <SearchFormInput
-          type="text"
-          autoComplete="off"
-          autoFocus
-          placeholder="Search images and photos"
-          name="search"
-        />
-      </SearchForm>
-    </SearchBar>
-  );
-};
-export default Searchbar;
+  handleSubmit = e => {
+    e.preventDefault();
+    if (this.state.nameSearch.trim() === '') {
+      return;
+    }
+    this.props.onSubmit(this.state.nameSearch);
+    this.reset();
+  };
+
+  reset = () => {
+    this.setState({
+      nameSearch: '',
+    });
+  };
+
+  render() {
+    return (
+      <SearchBar>
+        <SearchForm onSubmit={this.handleSubmit}>
+          <SearchFormButton type="submit">Search</SearchFormButton>
+
+          <SearchFormInput
+            type="text"
+            autoComplete="off"
+            autoFocus
+            placeholder="Search images"
+            value={this.state.nameSearch}
+            onChange={this.handleChange}
+          />
+        </SearchForm>
+      </SearchBar>
+    );
+  }
+}

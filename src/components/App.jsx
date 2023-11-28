@@ -1,114 +1,90 @@
 import { Component } from 'react';
-import Searchbar from './Searchbar/Searchbar';
+import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Wrapper, Error } from './App.styled';
-import { searchService } from '../services/apiPixaby';
+import SearchService from '../services/apiPixaby';
 import { Loader } from './Loader/Loader';
-import { Button } from './Button/Button';
-import { Modal } from './Modal/Modal';
 
 export class App extends Component {
   state = {
-    query: '',
+    nameSearch: '',
     images: [],
     page: 1,
-    currentItem: null,
-    isLoading: false,
-    isModalOpen: false,
-    isLoadMore: false,
-    isSearchDisabled: false,
-    error: '',
+    loadMore: false,
+    showModal: false,
+    isLoader: false,
+    modalData: { img: '', tags: '' },
+    error: null,
   };
 
-  componentDidUpdate(_, prevState) {
-    const { page, query } = this.state;
-    if (page !== prevState.page || query !== prevState.query) {
-      this.setState({ isLoading: true, isSearchDisabled: true });
-      searchService(query, page)
-        .then(({ hits, totalHits }) => {
-          if (!hits.length) {
-            this.setState({
-              error:
-                'Sorry, there are no images matching your search query. Please try again.',
-            });
-            return;
-          }
-          this.setState(prev => ({
-            images: [...prev.images, ...hits],
-            isLoadMore: this.state.page < Math.ceil(totalHits / 12),
-            error: '',
-          }));
-        })
-        .catch(error =>
-          this.setState({
-            error: 'Sorry, something went wrong. Please try again later.',
-          })
-        )
-        .finally(() =>
-          this.setState({ isLoading: false, isSearchDisabled: false })
-        );
-    }
-  }
-
-  handleSearch = obj => {
-    if (obj.searchQuery.trim() === '') {
-      this.setState({
-        error: 'Please, enter your query',
-      });
-      return;
-    }
-    this.setState({
-      query: obj.searchQuery,
-      page: 1,
-      images: [],
-      isLoadMore: false,
-      error: '',
-    });
+  handleSubmit = nameSearch => {
+    this.setState({ nameSearch: nameSearch, page: 1 });
   };
 
-  handleLoadMore = () => {
-    this.setState(prev => ({ page: prev.page + 1 }));
+  handleLoadClick = prevState => {
+    this.setState({ page: this.state.page + 1 });
   };
 
-  openModal = e => {
-    const currentImageId = Number(e.target.id);
-    const currentItem = this.state.images.find(
-      ({ id }) => id === currentImageId
-    );
-    this.setState({ currentItem: currentItem, isModalOpen: true });
+  setModalData = (img, tags) => {
+    this.setState({ showModal: true, modalData: { img, tags } });
   };
 
   closeModal = () => {
-    this.setState({ currentItem: null, isModalOpen: false });
+    this.setState({ showModal: false });
   };
+  componentDidUpdate(_, prevState) {
+    const PrevState = prevState.nameSearch;
+    const NextState = this.state.nameSearch;
+    const { page } = this.state;
+
+    if (PrevState !== NextState || page !== prevState.page) {
+      this.setState({ isLoader: true, loadMore: false, error: null });
+
+      const searchService = new SearchService(NextState, page);
+      searchService
+        .fetchImg(page)
+        .then(images => {
+          if (images.hits.length > 0) {
+            this.setState(prevState => ({
+              images:
+                page === 1
+                  ? images.hits
+                  : [...prevState.images, ...images.hits],
+              loadMore: page < Math.ceil(images.totalHits / 12),
+            }));
+          } else {
+            return Promise.reject(
+              new Error('Oops... there are no images matching your search...')
+            );
+          }
+        })
+        .catch(error => {
+          this.setState({ images: [], error });
+        })
+        .finally(this.setState({ isLoader: false }));
+    }
+  }
 
   render() {
-    const {
-      images,
-      isModalOpen,
-      isLoadMore,
-      isLoading,
-      isSearchDisabled,
-      currentItem,
-      error,
-    } = this.state;
+    const { error, isLoader, loadMore, showModal, images, modalData } =
+      this.state;
 
     return (
       <Wrapper>
-        <Searchbar
-          handleSearch={this.handleSearch}
-          isSearchDisabled={isSearchDisabled}
-        />
-        {error === '' ? (
-          <ImageGallery items={images} handleOpenModal={this.handleOpenModal} />
-        ) : (
-          <Error>{error}</Error>
+        <Searchbar onSubmit={this.handleSubmit}></Searchbar>
+        {error && <Error>{this.state.error.message}</Error>}
+        {!this.state.isLoader && (
+          <ImageGallery
+            loadMore={loadMore}
+            showModal={showModal}
+            images={images}
+            handleLoadClick={this.handleLoadClick}
+            closeModal={this.closeModal}
+            setModalData={this.setModalData}
+            modalData={modalData}
+          ></ImageGallery>
         )}
-        {isLoading && <Loader />}
-        {isLoadMore && <Button onClick={this.handleLoadMore} />}
-        {isModalOpen && (
-          <Modal item={currentItem} closeModal={this.closeModal} />
-        )}
+        {isLoader && <Loader></Loader>}
       </Wrapper>
     );
   }
