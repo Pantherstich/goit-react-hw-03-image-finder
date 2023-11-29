@@ -35,7 +35,7 @@ export class Searchbar extends Component {
     return (
       <SearchBar>
         <SearchForm onSubmit={this.handleSubmit}>
-          <SearchFormButton type="submit">Search</SearchFormButton>
+          <SearchFormButton type="submit">🔍</SearchFormButton>
 
           <SearchFormInput
             type="text"

@@ -9,6 +9,5 @@ export const Wrapper = styled.div`
 
 export const Error = styled.p`
   margin: 0 auto;
-  color: #ed64e7;
   font-size: 24px;
 `;

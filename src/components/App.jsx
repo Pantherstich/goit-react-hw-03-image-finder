@@ -17,21 +17,21 @@ export class App extends Component {
     error: null,
   };
 
-  handleSubmit = nameSearch => {
-    this.setState({ nameSearch: nameSearch, page: 1 });
-  };
+  // handleSubmit = nameSearch => {
+  //   this.setState({ nameSearch: nameSearch, page: 1 });
+  // };
 
-  handleLoadClick = prevState => {
-    this.setState({ page: this.state.page + 1 });
-  };
+  // handleLoadClick = prevState => {
+  //   this.setState({ page: this.state.page + 1 });
+  // };
 
-  setModalData = (img, tags) => {
-    this.setState({ showModal: true, modalData: { img, tags } });
-  };
+  // setModalData = (img, tags) => {
+  //   this.setState({ showModal: true, modalData: { img, tags } });
+  // };
 
-  closeModal = () => {
-    this.setState({ showModal: false });
-  };
+  // closeModal = () => {
+  //   this.setState({ showModal: false });
+  // };
   componentDidUpdate(_, prevState) {
     const PrevState = prevState.nameSearch;
     const NextState = this.state.nameSearch;
@@ -53,9 +53,10 @@ export class App extends Component {
               loadMore: page < Math.ceil(images.totalHits / 12),
             }));
           } else {
-            return Promise.reject(
-              new Error('Oops... there are no images matching your search...')
-            );
+            this.setState({
+              images: [],
+              error: 'Oops... there are no images matching your search...',
+            });
           }
         })
         .catch(error => {
@@ -64,16 +65,30 @@ export class App extends Component {
         .finally(this.setState({ isLoader: false }));
     }
   }
+  handleSubmit = nameSearch => {
+    this.setState({ nameSearch: nameSearch, page: 1 });
+  };
 
+  handleLoadClick = prevState => {
+    this.setState({ page: this.state.page + 1 });
+  };
+
+  setModalData = (img, tags) => {
+    this.setState({ showModal: true, modalData: { img, tags } });
+  };
+
+  closeModal = () => {
+    this.setState({ showModal: false });
+  };
   render() {
     const { error, isLoader, loadMore, showModal, images, modalData } =
       this.state;
-
     return (
       <Wrapper>
         <Searchbar onSubmit={this.handleSubmit}></Searchbar>
-        {error && <Error>{this.state.error.message}</Error>}
-        {!this.state.isLoader && (
+        {isLoader && <Loader />}
+        {error && <Error>{error}</Error>}
+        {!isLoader && (
           <ImageGallery
             loadMore={loadMore}
             showModal={showModal}
@@ -84,7 +99,6 @@ export class App extends Component {
             modalData={modalData}
           ></ImageGallery>
         )}
-        {isLoader && <Loader></Loader>}
       </Wrapper>
     );
   }
